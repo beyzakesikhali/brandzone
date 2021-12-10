@@ -3,37 +3,30 @@ from ..items import PythonprojectItem
 class aktifBebek(scrapy.Spider) :
     name = 'aktifbebek'
     pageNumber = 1
-    barcodeUrls=[]
     start_urls = [
         'https://www.aktifbebek.com/bebek-bakimi-ve-banyo'
     ]
 
     def parse(self, response):
         items=PythonprojectItem()
-        x=1
-        aktifBebek.barcodeUrls=response.xpath("//a[@class='name']/@href").getall()
-        #aktifBebek.barcodeUrls=response.xpath("//a[@class='name']/@href").getall()
-        if len(aktifBebek.barcodeUrls)>0:
-            yield response.follow(url=aktifBebek.barcodeUrls[x], callback=self.parse)
-            x+=1
-            aktifBebek.barcodeUrls.pop(x)
+        products=response.xpath("//div[@class='products-item']").getall()
 
-        for productUrl in aktifBebek.barcodeUrls:
-            print("barcodeUrl", productUrl)
-            product = response.xpath("//div[@class='product']")
-            print("product extract",product)
+        for product in products:
+            productName= response.xpath("//a[@class='name']/text()").get()
+            print("productName",productName)
             brand=product.xpath("//a[@class='brand']/text()").get()
             print("brand",brand)
-            productName=product.xpath("//h2[@class='theme-h2']/text()").extract()
-            print("productName",productName)
-            image=product.xpath("//img/@src").get()
+            barcode=product.xpath("p/text()").get()
+            print("barcode",barcode)
+            image=product.xpath("//img/@data-src").get()
             print("image",image)
+            productUrl= response.xpath("//a[@class='name']/@href").get()
             items["name"]=productName
             items["brand"]=brand
             items["image"]=image
             items["url"]=productUrl
             print("ITEMS",items)
-            yield items
+        yield items
 
         if aktifBebek.pageNumber<3 :
             print("pageNumber:",aktifBebek.pageNumber)
